@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Chat Example</title>
+<script type="text/javascript">
+window.onload = function () {
+    var name = document.getElementById("name");
+    var password = document.getElementById("password");
+
+
+    document.getElementById("form").onsubmit = function () {
+        if (!name.value||!password.value) {
+            return false;
+        }
+        var user={"username":name.value,"password":password.value}
+  xmlhttp = new XMLHttpRequest();
+var url = "http://localhost:8081/login";
+xmlhttp.open("POST", url, true);
+xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+xmlhttp.onreadystatechange = function () { //Call a function when the state changes.
+    if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+        // alert(xmlhttp.responseText);
+        localStorage.setItem("token", xmlhttp.responseText);
+    }
+
+        localStorage.setItem("token", xmlhttp.responseText);
+}
+
+// Neither was accepted when I set with parameters="username=myname"+"&password=mypass" as the server may not accept that
+xmlhttp.send(JSON.stringify(user));
+        localStorage.setItem("token", xmlhttp.responseText);
+    };
+
+
+  
+    }
+
+</script>
+<style type="text/css">
+html {
+    overflow: hidden;
+}
+
+body {
+    overflow: hidden;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    background: gray;
+}
+
+#log {
+    background: white;
+    margin: 0;
+    padding: 0.5em 0.5em 0.5em 0.5em;
+    position: absolute;
+    top: 0.5em;
+    left: 0.5em;
+    right: 0.5em;
+    bottom: 3em;
+    overflow: auto;
+}
+
+#form {
+    padding: 0 0.5em 0 0.5em;
+    margin: 0;
+    position: absolute;
+    bottom: 1em;
+    left: 0px;
+    width: 100%;
+    overflow: hidden;
+}
+
+</style>
+</head>
+<body>
+<div id="log"></div>
+<form id="form">
+    <input type="submit" value="Send" />
+    <input type="text" id="name" size="64" autofocus value="username"/>
+    <input type="password" id="password" size="64" autofocus  value="password"/>
+</form>
+</body>
+</html>

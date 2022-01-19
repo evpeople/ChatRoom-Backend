@@ -2,13 +2,14 @@ package ws
 
 import (
 	"bytes"
+	"evpeople/ChatRoom/middleware"
 	"fmt"
 	"log"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/gorilla/websocket"
+	"github.com/sirupsen/logrus"
 )
 
 var upgrader = websocket.Upgrader{
@@ -35,12 +36,13 @@ var (
 	newline = []byte{'\n'}
 	space   = []byte{' '}
 	totalId = 0
+	idMap   = map[int]int{}
 )
 
 type Client struct {
 	hub *Hub
 
-	id int
+	usr *middleware.User
 	// The websocket connection.
 	conn *websocket.Conn
 
@@ -56,9 +58,25 @@ func ServeWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		return
 	}
-	//TODO： 修改totalID 的逻辑
-	totalId++
-	client := &Client{hub: hub, conn: conn, send: make(chan []byte, 256), id: totalId}
+	err = middleware.TokenValid(r)
+	if err != nil {
+		logrus.Debug(err)
+	}
+	user, err := middleware.ExtractTokenMetadata(r)
+	if err != nil {
+		logrus.Debug(err)
+	}
+	if _, ok := idMap[int(user.ID)]; !ok {
+		totalId++
+		welcome := fmt.Sprintf(welcomeMessage, user.Username)
+		fmt.Println(welcome)
+		hub.broadcast <- []byte(welcome)
+		idMap[int(user.ID)] = 1
+	} else {
+		idMap[int(user.ID)]++
+	}
+	// id := int(user.ID)
+	client := &Client{hub: hub, conn: conn, send: make(chan []byte, 256), usr: user}
 	client.hub.register <- client
 	// q, err := client.conn.NextWriter(websocket.TextMessage)
 	if err != nil {
@@ -67,11 +85,9 @@ func ServeWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
 
 	//TODO: 完成了登录之后才能发送消息，下一步需要做的，发送消息前，从Cookie中解码出正确的用户ID，更改TotalId的增加逻辑，当确实出现新的Cookie中的ID的时候，再增加TotalID
 
-	welcome := fmt.Sprintf(welcomeMessage, client.id)
-	fmt.Println(welcome)
+	//TODO:用户离开一个连接，关闭一个User
 	// q.Write([]byte(welcome))
 	// client.send <- []byte(welcome + "!!!!!!!!!!")
-	client.hub.broadcast <- []byte(welcome)
 	// Allow collection of memory referenced by the caller by doing all work in
 	// new goroutines.
 
@@ -95,7 +111,9 @@ func (c *Client) readPump() {
 			}
 			break
 		}
-		message = bytes.TrimSpace(bytes.Replace([]byte(strconv.Itoa(c.id)+" 说"+string(message)), newline, space, -1))
+
+		//构造发送的信息
+		message = bytes.TrimSpace(bytes.Replace([]byte(c.usr.Username+" 说"+string(message)), newline, space, -1))
 		c.hub.broadcast <- message
 	}
 }

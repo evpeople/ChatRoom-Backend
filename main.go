@@ -33,7 +33,6 @@ func main() {
 	//middleware.Meth("Get")的执行结果是一个函数闭包，这个函数存储了"GET"的信息
 	http.HandleFunc("/login", middleware.Login)
 	http.HandleFunc("/ss", middleware.Chain(middleware.Hello, middleware.Method("GET"), middleware.CheckCookie()))
-	go hub.Run()
 	// http.HandleFunc("/login")
 	http.HandleFunc("/", serveHome)
 	http.HandleFunc("/ws", middleware.Chain(func(w http.ResponseWriter, r *http.Request) {
@@ -42,6 +41,7 @@ func main() {
 	// http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
 	// 	ws.ServeWs(hub, w, r)
 	// })
+	go hub.Run()
 	err := http.ListenAndServe(*addr, nil)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)

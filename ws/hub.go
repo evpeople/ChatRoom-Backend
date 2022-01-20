@@ -30,6 +30,10 @@ func (h *Hub) Run() {
 			h.clients[client] = true
 		case client := <-h.unregister:
 			if _, ok := h.clients[client]; ok {
+				idMap[int(client.usr.ID)]--
+				if idMap[int(client.usr.ID)] == 0 {
+					delete(idMap, int(client.usr.ID))
+				}
 				delete(h.clients, client)
 				close(client.send)
 			}

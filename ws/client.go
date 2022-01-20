@@ -52,7 +52,6 @@ type Client struct {
 
 // serveWs handles websocket requests from the peer.
 func ServeWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
-	//	fmt.Println("I am sb")
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println(err)
@@ -74,7 +73,6 @@ func ServeWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
 	} else {
 		idMap[int(user.ID)]++
 	}
-	// id := int(user.ID)
 	client := &Client{hub: hub, conn: conn, send: make(chan []byte, 256), usr: user}
 	client.hub.register <- client
 	if first {
@@ -82,18 +80,9 @@ func ServeWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
 		fmt.Println(welcome)
 		hub.broadcast <- []byte(welcome)
 	}
-	// q, err := client.conn.NextWriter(websocket.TextMessage)
 	if err != nil {
 		return
 	}
-
-	//TODO: 完成了登录之后才能发送消息，下一步需要做的，发送消息前，从Cookie中解码出正确的用户ID，更改TotalId的增加逻辑，当确实出现新的Cookie中的ID的时候，再增加TotalID
-
-	//TODO:用户离开一个连接，关闭一个User
-	// q.Write([]byte(welcome))
-	// client.send <- []byte(welcome + "!!!!!!!!!!")
-	// Allow collection of memory referenced by the caller by doing all work in
-	// new goroutines.
 
 	go client.writePump()
 	go client.readPump()

@@ -29,7 +29,7 @@ const (
 
 	// Maximum message size allowed from peer.
 	maxMessageSize = 512
-	welcomeMessage = "The User %d is comming\n"
+	welcomeMessage = "The User %s is comming\n"
 )
 
 var (
@@ -58,6 +58,7 @@ func ServeWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		return
 	}
+	first := false
 	err = middleware.TokenValid(r)
 	if err != nil {
 		logrus.Debug(err)
@@ -67,10 +68,8 @@ func ServeWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
 		logrus.Debug(err)
 	}
 	if _, ok := idMap[int(user.ID)]; !ok {
+		first = true
 		totalId++
-		welcome := fmt.Sprintf(welcomeMessage, user.Username)
-		fmt.Println(welcome)
-		hub.broadcast <- []byte(welcome)
 		idMap[int(user.ID)] = 1
 	} else {
 		idMap[int(user.ID)]++
@@ -78,6 +77,11 @@ func ServeWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
 	// id := int(user.ID)
 	client := &Client{hub: hub, conn: conn, send: make(chan []byte, 256), usr: user}
 	client.hub.register <- client
+	if first {
+		welcome := fmt.Sprintf(welcomeMessage, user.Username)
+		fmt.Println(welcome)
+		hub.broadcast <- []byte(welcome)
+	}
 	// q, err := client.conn.NextWriter(websocket.TextMessage)
 	if err != nil {
 		return

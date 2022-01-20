@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"encoding/json"
+	"evpeople/ChatRoom/db"
 	"net/http"
 
 	"github.com/sirupsen/logrus"
@@ -11,18 +12,6 @@ type User struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 	ID       uint64 `json:"id"`
-}
-
-var user = User{
-	ID:       1,
-	Username: "username",
-	Password: "password",
-}
-
-var user2 = User{
-	ID:       2,
-	Username: "evpeople",
-	Password: "password",
 }
 
 func Login(w http.ResponseWriter, r *http.Request) {
@@ -37,10 +26,26 @@ func Login(w http.ResponseWriter, r *http.Request) {
 			logrus.Debug("json wrong")
 			logrus.Debug(err)
 		}
-
-		if user.Username != u.Username || user.Password != u.Password {
+		raw, err := db.DB.Query("select name, password from usr where name=?", u.Username)
+		if err != nil {
+			logrus.Warn("wrong user")
+			return
+		}
+		defer raw.Close()
+		var name, password string
+		for raw.Next() {
+			if err := raw.Scan(&name, &password); err != nil {
+				logrus.Warn(err)
+			}
+		}
+		// logrus.Trace(name, password)
+		if name == "" {
+			logrus.Warn("User not exist")
+			return
+		}
+		if name != u.Username || password != u.Password {
 			logrus.Debug("wrong user" + u.Username + "/n" + u.Password)
-			// return
+			return
 		}
 		token, err := createToken(u.ID, u.Username)
 		if err != nil {

@@ -60,3 +60,19 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		http.SetCookie(w, &cookie)
 	}
 }
+func Sign(w http.ResponseWriter, r *http.Request) {
+	var u User
+	err := json.NewDecoder(r.Body).Decode(&u)
+	if err != nil {
+		logrus.Warn("wrong sign")
+		logrus.Warn(err)
+		w.WriteHeader(http.StatusPaymentRequired)
+		w.Write([]byte("can't sign because your fault"))
+
+	}
+	_, err = db.DB.Exec("insert into USR(NAME,PASSWORD)"+" VALUES(?,?)", u.Username, u.Password)
+	if err != nil {
+		logrus.Debug(err)
+	}
+	w.Write([]byte("success sign in"))
+}

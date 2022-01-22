@@ -35,5 +35,5 @@ jobs:
             cd ChatRoom-Backend/
             git pull
             /usr/local/go/bin/go build -o backend.out
-            nohup ./backend.out &
+            nohup ./backend.out >/tmp/test.out 2>&1 &
             

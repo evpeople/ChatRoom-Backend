@@ -34,6 +34,6 @@ jobs:
             pkill backend.out
             cd ChatRoom-Backend/
             git pull
-            go build -o backend.out
+            /usr/local/go/bin/go build -o backend.out
             nohup ./backend.out &
             

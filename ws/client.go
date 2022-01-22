@@ -2,6 +2,7 @@ package ws
 
 import (
 	"bytes"
+	"evpeople/ChatRoom/db"
 	"evpeople/ChatRoom/middleware"
 	"fmt"
 	"log"
@@ -48,6 +49,12 @@ type Client struct {
 
 	// Buffered channel of outbound messages.
 	send chan []byte
+}
+type Message struct {
+	messageId uint64
+	userId    uint64
+	message   string
+	time      time.Time
 }
 
 // serveWs handles websocket requests from the peer.
@@ -106,6 +113,8 @@ func (c *Client) readPump() {
 		}
 
 		//构造发送的信息
+		tmpMessage := Message{userId: c.usr.ID, message: string(message)}
+		db.DB.Exec("insert into message(userID,message)"+" VALUES(?,?)", tmpMessage.userId, tmpMessage.message)
 		message = bytes.TrimSpace(bytes.Replace([]byte(c.usr.Username+" 说"+string(message)), newline, space, -1))
 		c.hub.broadcast <- message
 	}

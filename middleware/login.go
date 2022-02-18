@@ -16,9 +16,10 @@ type User struct {
 
 func Login(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
+		logrus.Debug("GET , give login")
 		http.ServeFile(w, r, "login.html")
 	} else {
-		logrus.Trace("in login")
+		logrus.Debug("in login")
 		var u User
 		//http转json
 		err := json.NewDecoder(r.Body).Decode(&u)

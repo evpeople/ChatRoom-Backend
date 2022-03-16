@@ -30,7 +30,8 @@ const (
 
 	// Maximum message size allowed from peer.
 	maxMessageSize = 512
-	welcomeMessage = "The User %s is comming\n"
+	// welcomeMessage = "The User %s is comming\n"
+	welcomeMessage = `{from,%s,type:coming}`
 )
 
 var (

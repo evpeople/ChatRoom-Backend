@@ -1,5 +1,11 @@
 package ws
 
+import (
+	"encoding/json"
+
+	"github.com/sirupsen/logrus"
+)
+
 type Hub struct {
 	// Registered clients.
 	clients map[*Client]bool
@@ -12,6 +18,12 @@ type Hub struct {
 
 	// Unregister requests from clients.
 	unregister chan *Client
+}
+type messageDetail struct {
+	To     []string
+	Dialog string
+	Type   string
+	Detail string
 }
 
 func NewHub() *Hub {
@@ -39,7 +51,19 @@ func (h *Hub) Run() {
 			}
 		case message := <-h.broadcast:
 			//从 broadcast获取了消息后，在每一个当前存在的链接上发送消息。
-
+			var messageDetail messageDetail
+			err := json.Unmarshal(message, &messageDetail)
+			if err != nil {
+				logrus.Debug(messageDetail)
+				logrus.Debug("json err", err)
+			}
+			toMap := make(map[string]bool)
+			for _, v := range messageDetail.To {
+				// logrus.Println("to", k, v)
+				toMap[v] = true
+			}
+			logrus.Println("dialog", messageDetail.Dialog)
+			logrus.Println("detail", string(messageDetail.Detail))
 			//TODO issue #1 ,此处应该序列化json 数据
 			/*{
 				"to":{"evpeople","verso"},
@@ -53,12 +77,24 @@ func (h *Hub) Run() {
 			//另规定：当头部中"to":{}时发送到所有连接到服务器的用户。
 			//
 			for client := range h.clients {
-				select {
-				//这个send的意思是发送给当前存在的连接上。
-				case client.send <- message:
-				default:
-					close(client.send)
-					delete(h.clients, client)
+				if len(toMap) != 0 {
+					if _, ok := toMap[client.usr.Username]; ok {
+						select {
+						//这个send的意思是发送给当前存在的连接上。
+						case client.send <- message:
+						default:
+							close(client.send)
+							delete(h.clients, client)
+						}
+					}
+				} else {
+					select {
+					//这个send的意思是发送给当前存在的连接上。
+					case client.send <- message:
+					default:
+						close(client.send)
+						delete(h.clients, client)
+					}
 				}
 			}
 		}

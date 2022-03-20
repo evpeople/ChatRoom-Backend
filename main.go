@@ -39,6 +39,7 @@ func main() {
 	http.HandleFunc("/ws", middleware.Chain(func(w http.ResponseWriter, r *http.Request) {
 		ws.ServeWs(hub, w, r)
 	}, middleware.CheckCookie()))
+	http.HandleFunc("/usr", middleware.Chain(middleware.UsrNum, middleware.CheckCookie()))
 	// http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
 	// 	ws.ServeWs(hub, w, r)
 	// })

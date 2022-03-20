@@ -78,3 +78,6 @@ func Sign(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Write([]byte("success sign in"))
 }
+func UsrNum(w http.ResponseWriter, r *http.Request) {
+
+}

@@ -118,7 +118,7 @@ func (c *Client) readPump() {
 		db.DB.Exec("insert into message(userID,message)"+" VALUES(?,?)", tmpMessage.userId, tmpMessage.message)
 		// message = bytes.TrimSpace(bytes.Replace([]byte(c.usr.Username+" 说"+string(message)), newline, space, -1))
 		message = bytes.TrimSpace(bytes.Replace(message, newline, space, -1))
-		c.hub.broadcast <- message
+		c.hub.broadcast <- append(message, []byte(`"From":"`+c.usr.Username+`"`)...)
 	}
 }
 

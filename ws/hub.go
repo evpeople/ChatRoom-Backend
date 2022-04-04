@@ -62,6 +62,7 @@ func (h *Hub) Run() {
 			err := json.Unmarshal(message, &messageDetail)
 			if err != nil {
 				logrus.Debug(messageDetail)
+				logrus.Debug("wrong message is ", string(message))
 				logrus.Debug("json err", err)
 			}
 			toMap := make(map[string]bool)

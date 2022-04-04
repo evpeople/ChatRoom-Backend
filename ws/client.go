@@ -31,7 +31,7 @@ const (
 	// Maximum message size allowed from peer.
 	maxMessageSize = 512
 	// welcomeMessage = "The User %s is comming\n"
-	welcomeMessage = `{"from","%s","type":"coming"}`
+	welcomeMessage = `{"from":"%s","type":"coming"}`
 )
 
 var (
@@ -118,7 +118,7 @@ func (c *Client) readPump() {
 		db.DB.Exec("insert into message(userID,message)"+" VALUES(?,?)", tmpMessage.userId, tmpMessage.message)
 		// message = bytes.TrimSpace(bytes.Replace([]byte(c.usr.Username+" 说"+string(message)), newline, space, -1))
 		message = bytes.TrimSpace(bytes.Replace(message, newline, space, -1))
-		c.hub.broadcast <- append(message, []byte(`"From":"`+c.usr.Username+`"`)...)
+		c.hub.broadcast <- append(message[:len(message)-1], []byte(`,"from":"`+c.usr.Username+`"}`)...)
 	}
 }
 

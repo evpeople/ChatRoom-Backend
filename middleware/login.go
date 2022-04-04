@@ -59,6 +59,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 			HttpOnly: true,
 		}
 		http.SetCookie(w, &cookie)
+		logrus.Info("Succes logging")
 	}
 }
 func Sign(w http.ResponseWriter, r *http.Request) {

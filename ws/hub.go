@@ -20,10 +20,17 @@ type Hub struct {
 	unregister chan *Client
 }
 type messageDetail struct {
-	To     []string
-	Dialog string
-	Type   string
-	Detail string
+	To     []string `json:"to"`
+	Dialog string   `json:"dialog"`
+	Type   string   `json:"type"`
+	Detail string   `json:"detail"`
+	From   string   `json:"from"`
+}
+type messageSend struct {
+	From   string `json:"from"`
+	Dialog string `json:"dialog"`
+	Type   string `json:"type"`
+	Detail string `json:"detail"`
 }
 
 func NewHub() *Hub {
@@ -64,6 +71,18 @@ func (h *Hub) Run() {
 			}
 			logrus.Println("dialog", messageDetail.Dialog)
 			logrus.Println("detail", string(messageDetail.Detail))
+			var sendMessage messageSend
+			if messageDetail.Type == "users" {
+				usrs := ""
+				for k, v := range h.clients {
+					if v {
+						usrs += k.usr.Username + "\n"
+					}
+				}
+				sendMessage = messageSend{Dialog: messageDetail.Dialog, Detail: usrs, From: messageDetail.From, Type: messageDetail.Type}
+			} else {
+				sendMessage = messageSend{Dialog: messageDetail.Dialog, Detail: messageDetail.Detail, From: messageDetail.From, Type: messageDetail.Type}
+			}
 			//TODO issue #1 ,此处应该序列化json 数据
 			/*{
 				"to":{"evpeople","verso"},
@@ -76,21 +95,27 @@ func (h *Hub) Run() {
 			//如果比较闲，可以给报文增加一个"timeStamp":时间戳的项。
 			//另规定：当头部中"to":{}时发送到所有连接到服务器的用户。
 			//
+			tmp, err := json.Marshal(sendMessage)
+			if err != nil {
+				logrus.Debug(err)
+			}
 			for client := range h.clients {
 				if len(toMap) != 0 {
 					if _, ok := toMap[client.usr.Username]; ok {
 						select {
 						//这个send的意思是发送给当前存在的连接上。
-						case client.send <- message:
+
+						case client.send <- tmp:
 						default:
 							close(client.send)
 							delete(h.clients, client)
 						}
 					}
 				} else {
+					//TO 为空时
 					select {
 					//这个send的意思是发送给当前存在的连接上。
-					case client.send <- message:
+					case client.send <- tmp:
 					default:
 						close(client.send)
 						delete(h.clients, client)

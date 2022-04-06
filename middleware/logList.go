@@ -11,6 +11,18 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+var (
+	helpMessage = `
+GET /log/list 查看所有日志的列表,
+GET /log/list/日志名 查看对应日志的信息
+GET /log/help/ 进入当前页面
+POST /log/list/-1 同时使用Secret UA,上传文件`
+)
+
+func LogHelp(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte(helpMessage))
+}
+
 func LogList(w http.ResponseWriter, r *http.Request) {
 	id := strings.TrimPrefix(r.URL.Path, "/log/list/")
 	switch r.Method {
@@ -21,13 +33,14 @@ func LogList(w http.ResponseWriter, r *http.Request) {
 			content, err := cat(id)
 			if err != nil {
 				logrus.Debug(err)
-				w.Write([]byte("some thing wrong ,maybe is wrong file name"))
+				w.Write([]byte("some thing wrong ,maybe is wrong file name\n" + helpMessage))
 			}
 			w.Write([]byte(content))
 		}
 		logrus.Debug(id)
 	case "POST":
 		if !rightUsrAgent(r.UserAgent()) || id != "-1" {
+			w.Write([]byte(helpMessage))
 			return
 		}
 		logrus.Info("POST log file")
@@ -85,6 +98,7 @@ func ls() string {
 	return fileList
 }
 func rightUsrAgent(ua string) bool {
+	//TODO:从环境变量获取
 	return ua == "vsper"
 }
 func cat(id string) ([]byte, error) {

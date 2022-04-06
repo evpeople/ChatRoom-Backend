@@ -3,7 +3,6 @@ package middleware
 import (
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -48,7 +47,7 @@ func LogList(w http.ResponseWriter, r *http.Request) {
 		logFile, _, err := r.FormFile("logfile") //获取文件内容
 
 		if err != nil {
-			log.Fatal(err)
+			logrus.Debug(err)
 		}
 		defer logFile.Close()
 		logName := ""

@@ -31,6 +31,7 @@ func main() {
 	flag.Parse()
 	hub := ws.NewHub()
 	//middleware.Meth("Get")的执行结果是一个函数闭包，这个函数存储了"GET"的信息
+	http.HandleFunc("/log/list/", middleware.LogList)
 	http.HandleFunc("/login", middleware.Login)
 	http.HandleFunc("/sign", middleware.Sign)
 	http.HandleFunc("/ss", middleware.Chain(middleware.Hello, middleware.Method("GET"), middleware.CheckCookie()))

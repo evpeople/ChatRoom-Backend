@@ -32,6 +32,7 @@ const (
 	maxMessageSize = 512
 	// welcomeMessage = "The User %s is comming\n"
 	welcomeMessage = `{"from":"%s","type":"coming"}`
+	leaveMessage   = `{"from":"%s","type":"leaving"}`
 )
 
 var (
@@ -127,6 +128,9 @@ func (c *Client) writePump() {
 	defer func() {
 		ticker.Stop()
 		c.conn.Close()
+		leave := fmt.Sprintf(leaveMessage, c.usr.Username)
+		fmt.Println(leave)
+		c.hub.broadcast <- []byte(leave)
 	}()
 	for {
 		select {

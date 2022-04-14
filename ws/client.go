@@ -31,8 +31,10 @@ const (
 	// Maximum message size allowed from peer.
 	maxMessageSize = 512
 	// welcomeMessage = "The User %s is comming\n"
-	welcomeMessage = `{"from":"%s","type":"coming"}`
-	leaveMessage   = `{"from":"%s","type":"leaving"}`
+	// welcomeMessage = `{"from":"%s","type":"coming"}`
+	welcomeMessage = `{"to":[],"type":"coming","dialog":"","detail":"%s"}`
+	leaveMessage   = `{"to":[],"type":"leaving","dialog":"","detail":"%s"}`
+	// leaveMessage   = `{"from":"%s","type":"leaving"}`
 )
 
 var (
